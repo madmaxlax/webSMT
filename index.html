@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myapp" ng-controller="appController as ctrlr">
+
+<head>
+	<title ng-bind="'Point Builder Web'">Point Builder Web</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="shortcut icon" href="../favicon.ico">
+	<link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32x32.png">
+	<link rel="apple-touch-icon" href="../images/icons/apple-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="images/icons/apple-icon-72x72.png">
+	<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	<!--<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">-->
+	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.1/angular-material.min.css">
+	<link rel="stylesheet" type="text/css" href="styles.css" />
+
+</head>
+
+<body ng-keypress="shortcutKeypress($event)">
+	<md-toolbar layout="row" class="md-toolbar-tools" ng-cloak layout-align="space-between center">
+		<h1>SMT Point Builder-Web</h1>
+		<md-button class="menu md-icon-button" hide-gt-md ng-click="toggleLeft()" aria-label="Show Nav">
+			<md-icon aria-label="settings" class="material-icons">settings</md-icon>
+		</md-button>
+	</md-toolbar>
+
+	<div flex layout="row" ng-cloak>
+		<div ng-show="errors.length" class="md-warn">
+			{{errors}}<button type="button" class="close" ng-click="clearErrors()" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+		</div>
+		<div layout="column" flex>
+			<md-content flex>
+				<!-- Plant search auto complete -->
+				<form ng-submit="$event.preventDefault()" layout layout-align="center" layout-padding>
+					<div layout="row" flex>
+						<md-autocomplete flex md-selected-item="data.selectedTag" md-selected-item-change="getTagAttributes()" class="md-block" md-search-text="preferences.tagSearchText"
+						 md-items="tag in tagSearch()" md-select-on-focus md-selected-item-change="preferences.tagSearchText = tag.Name" md-select-on-match="true"
+						 md-item-text="tag.Name" md-floating-label="Tag Search" md-min-length="3" md-input-id="search-input-tags" md-no-cache="true">
+							<md-item-template>
+								<strong><span md-highlight-text="preferences.tagSearchText" md-highlight-flags="i">{{tag.Name}}</span></strong>:
+								{{tag.Description}}
+							</md-item-template>
+							<md-not-found>
+								No tags found "{{preferences.tagSearchText}}"
+							</md-not-found>
+						</md-autocomplete>
+						<div>
+							<md-button class="md-raised" ng-click="getPlantData()">
+								Search /
+								<md-icon aria-label="refresh" class="material-icons">autorenew</md-icon>
+							</md-button>
+						</div>
+					</div>
+				</form>
+			</md-content>
+			<md-content>
+				{{data.selectedTag.Name}}
+				<br/>
+				<md-input-container ng-repeat="attribute in data.selectedTag.Attributes">
+							<label>{{attribute.Name}}</label>
+							<input ng-model="data.selectedTag.Attributes[attribute.Name].Value">
+						</md-input-container>
+			</md-content>
+		</div>
+		<md-sidenav class="md-sidenav-right" md-is-locked-open="$mdMedia('gt-md')" md-component-id="right" ng-click="">
+			<md-content class="md-padding">
+				<md-list>
+					<md-subheader class="">Preferences</md-subheader>
+					<md-list-item>
+						<md-input-container flex>
+							<label>PI Web API URL: </label>
+							<input ng-model="preferences.PIWebAPIURLBase" ng-change="setPIWebCalls()">
+						</md-input-container>
+					</md-list-item>
+					<md-list-item>
+						<md-input-container>
+							<label>Server</label>
+							<md-select ng-model="preferences.PIWebAPIServer">
+								<!-- <md-option><em>None</em></md-option> -->
+								<md-option ng-repeat="server in preferences.PIWEBAvailableServers" ng-value="server">
+									{{server}}
+								</md-option>
+							</md-select>
+						</md-input-container>
+					</md-list-item>
+					<md-list-item>
+						<md-switch ng-model="preferences.tagSearchAddStarBefore">
+							<md-tooltip md-direction="top">
+								Whether or not to automatically add a * wild card to the beginning of the name search
+							</md-tooltip>
+							Add * before tag search?
+						</md-switch>
+					</md-list-item>
+					<md-list-item>
+						<md-switch ng-model="preferences.tagSearchAddStarAfter">
+							<md-tooltip md-direction="top">
+								Whether or not to automatically add a * wild card to the end of the name search
+							</md-tooltip>
+							Add * after tag search?
+						</md-switch>
+					</md-list-item>
+					<div layout="row" layout-align="center center">
+						<md-button class="md-raised md-accent" ng-click="savepreferences()">Save Settings
+							<md-icon aria-label="save" class="material-icons">save</md-icon>
+						</md-button>
+					</div>
+					<md-divider></md-divider>
+					<div layout="row" layout-align="center center">
+						<md-button class="" ng-disabled="" target="_blank" href="https://muntse-s-08817.europe.shell.com/piwebapi/help">
+							PI Web API Link
+							<md-icon aria-label="help" class="material-icons">help_outline</md-icon>
+							<md-tooltip md-direction="botom">
+								Click here if having problems getting data the first time.
+							</md-tooltip>
+						</md-button>
+					</div>
+					<md-divider></md-divider>
+
+				</md-list>
+			</md-content>
+		</md-sidenav>
+	</div>
+	<script src="./scripts/jquery.min.js"></script>
+	<script src="./scripts/bootstrap.min.js"></script>
+	<script src="./scripts/angular.min.js"></script>
+	<script src="./scripts/angular-resource.min.js"></script>
+	<script src="./scripts/angular-route.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular-animate.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular-aria.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular-messages.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.1/angular-material.min.js"></script>
+	<script src="./scripts/nglocalstorage.js"></script>
+	<script src="./scripts/angular-timeago.min.js"></script>
+	<script src="./scripts/app.js"></script>
+
+	<!-- 	<script src="//cdnjs.cloudflare.com/ajax/libs/less.js/2.4.0/less.min.js" type="text/javascript"></script> -->
+</body>
+
+</html>
